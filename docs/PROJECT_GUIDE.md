@@ -173,9 +173,11 @@ data/raw/
 
 ---
 
-# 7. Feature Engineering 계획
+# 7. Feature Engineering
 
-예정 Feature:
+전세와 월세 예측을 위한 Feature Engineering을 완료하였다.
+
+주요 Feature:
 
 ## building_age
 
@@ -215,7 +217,33 @@ data/raw/
 
 계약일로부터 추출
 
-필요 시 계절 Feature도 추가한다.
+계약월 기반 계절 Feature도 추가하였다.
+
+실제 모델링에는 계약월의 주기성을 표현하는
+`contract_month_sin`, `contract_month_cos`와
+시간 흐름을 표현하는 `time_idx`를 추가하였다.
+
+전세 모델:
+
+- Train: 266,848건
+- Test: 238,570건
+- Target: 전세보증금
+- 학습 Target: log(전세보증금)
+- 주요 Feature: 자치구, 법정동, 임대면적, 건축연식, 층, 시간추세, 계절성
+
+월세 모델:
+
+- Train: 185,103건
+- Test: 183,778건
+- Target: 월세
+- 학습 Target: log(월세)
+- 주요 Feature: 보증금, 자치구, 법정동, 임대면적, 건축연식, 층, 시간추세, 계절성
+
+미래 데이터 누수를 방지하기 위해 Random Split 대신
+계약일을 기준으로 다음과 같이 시간 분할하였다.
+
+- Train: 2023~2024
+- Test: 2025
 
 ---
 
@@ -269,34 +297,37 @@ H5
 
 # 10. 분석 방법
 
-사용 예정:
+사용 방법:
 
 - Descriptive Statistics
 - Pearson Correlation
 - Spearman Correlation
-- ANOVA
+- Kruskal-Wallis Test
 - Multiple Linear Regression
 
-모든 방법을 억지로 사용할 필요는 없다.
+전세가격 분포의 비정규성과 극단값을 고려하여
+자치구별 차이 검정에는 Kruskal-Wallis 검정을 사용하였다.
 
-분석 질문에 필요한 방법만 선택한다.
+전용면적과 가격의 관계에는 Pearson 및 Spearman 상관분석을,
+건축연식과 가격의 관계에는 Spearman 상관분석을 사용하였다.
+
+다른 조건을 동시에 통제하기 위해
+로그 변환 Target을 이용한 다중선형회귀분석을 수행하였다.
+
+p-value뿐 아니라 효과 크기, 설명력, 표본 수,
+변수 통제 여부를 함께 고려하여 결과를 해석하였다.
 
 ---
 
 # 11. Machine Learning
 
-전세와 월세를 필요에 따라 별도 모델링한다.
+전세와 월세를 별도 모델링하였다.
 
-Baseline:
+비교 모델:
 
-- Linear Regression
-
-Tree Model:
-
+- Median Baseline
+- Ridge Regression
 - Random Forest Regressor
-
-Boosting:
-
 - XGBoost
 
 평가 지표:
@@ -305,33 +336,58 @@ Boosting:
 - RMSE
 - R²
 
-가능하면 시간 기반 Split을 사용한다.
+시간 기반 Split:
 
-예:
+- Train: 2023~2024
+- Test: 2025
 
-Train:
-2023 ~ 2024
+전세와 월세 모두 XGBoost가 가장 높은 성능을 보여
+최종 모델로 선정하였다.
 
-Test:
-2025
+전세 XGBoost:
 
-단순 random split만 사용하는 것보다
-실제 미래 가격 예측 상황에 가까운 평가를 우선 검토한다.
+- MAE: 9,074.27만원
+- RMSE: 14,690.37만원
+- R²: 0.8403
+- Median Baseline 대비 MAE 개선율: 62.84%
+
+월세 XGBoost:
+
+- MAE: 29.32만원
+- RMSE: 57.68만원
+- R²: 0.7885
+- Median Baseline 대비 MAE 개선율: 60.98%
+
+Tree 기반 모델이 Ridge Regression보다 높은 성능을 보여
+임대가격에 비선형 관계와 Feature 간 상호작용이
+중요한 역할을 하는 것으로 판단하였다.
 
 ---
 
 # 12. Model Explainability
 
-최종 모델에 대해 SHAP을 사용한다.
+최종 XGBoost 모델에 SHAP을 적용하였다.
 
-확인 대상:
+분석 대상:
 
 - Global Feature Importance
 - Feature 영향 방향
 - 개별 예측 설명
 
-모델 성능뿐 아니라
-"왜 해당 가격을 예측했는가"를 설명하는 것이 목적이다.
+전세 모델에서는 임대면적이 가장 중요한 변수로 나타났으며,
+자치구, 건축연식, 법정동, 시간추세 순으로 높은 중요도를 보였다.
+
+월세 모델에서도 임대면적이 가장 중요했고,
+보증금이 두 번째로 높은 중요도를 보였다.
+
+임대면적이 증가할수록 전세와 월세 예측값을 높이는 방향,
+건축연식이 증가할수록 예측값을 낮추는 방향이 관찰되었다.
+
+월세 모델에서는 보증금이 증가할수록
+월세 예측값을 낮추는 전반적인 음의 관계가 확인되었다.
+
+SHAP은 모델의 예측 기여도를 설명하는 방법이며
+직접적인 인과관계를 의미하지 않는다.
 
 ---
 
@@ -549,13 +605,13 @@ Phase 8
 Feature Engineering
 
 Phase 9
-SQL 분석
-
-Phase 10
 Machine Learning
 
-Phase 11
+Phase 10
 SHAP
+
+Phase 11
+SQL 분석
 
 Phase 12
 README 및 분석 보고서
@@ -578,7 +634,7 @@ Portfolio 연결
 
 현재:
 
-Phase 7 - 통계 분석 준비 단계
+Phase 11 - SQL 분석 준비 단계
 
 완료:
 
@@ -611,6 +667,16 @@ Phase 7 - 통계 분석 준비 단계
 - 정제 데이터 저장
 - EDA 완료
 - 거래량, 전세가격, 지역, 면적, 건축연식, 월세 관계 분석 완료
+- H1~H5 통계검정 완료
+- 전세/월세 Feature Engineering 완료
+- 2023~2024 Train / 2025 Test 시간 분할 완료
+- Median Baseline, Ridge Regression, Random Forest, XGBoost 모델 비교 완료
+- 전세/월세 최종 XGBoost 모델 선정
+- 전세/월세 SHAP 분석 완료
+- `04_statistical_analysis.ipynb` 완료
+- `05_feature_engineering.ipynb` 완료
+- `06_modeling.ipynb` 완료
+- `07_model_explainability.ipynb` 완료
 
 
 ## 현재 정제 데이터
@@ -762,32 +828,171 @@ EDA에서는 실제 계약일 기준 2023~2025 데이터만 사용한다.
 평균보다 중앙값을 주요 대표값으로 사용한다.
 
 
+## 통계분석 주요 결과
+
+### H1. 자치구별 전세가격 차이
+
+Kruskal-Wallis 검정 결과:
+
+- H statistic: 157,921.5082
+- p-value: < 0.001
+- Epsilon squared: 0.3124
+
+서울 25개 자치구의 단위면적당 전세가격 분포에는
+통계적으로 유의한 차이가 존재하였으며,
+효과 크기도 큰 수준으로 확인되었다.
+
+
+### H2. 건축연식과 전세가격
+
+Spearman 순위상관분석 결과:
+
+- Spearman rho: -0.4143
+- p-value: < 0.001
+
+건축연식이 증가할수록 단위면적당 전세가격이 낮아지는
+중간 수준의 음의 관계가 관찰되었다.
+
+
+### H3. 전용면적과 전세가격
+
+상관분석 결과:
+
+- Pearson r: 0.6088
+- Spearman rho: 0.6373
+- p-value: < 0.001
+
+전용면적이 증가할수록 전세보증금도 증가하는
+비교적 강한 양의 관계가 나타났다.
+
+
+### H4. 다른 조건을 통제한 건축연식과 전세가격
+
+다중회귀분석 결과:
+
+- building_age coefficient: -0.011911
+- p-value: < 0.001
+- R-squared: 0.6287
+
+지역, 전용면적, 층, 계약연도를 통제한 후에도
+건축연식은 전세가격과 유의한 음의 관계를 보였다.
+
+건축연식이 1년 증가할 때 전세보증금은 평균적으로
+약 1.18% 낮아지는 관계가 관찰되었다.
+
+
+### H5. 보증금과 월세의 관계
+
+다중회귀분석 결과:
+
+- log_deposit coefficient: -0.2571
+- p-value: < 0.001
+- R-squared: 0.3871
+
+자치구, 전용면적, 건축연식, 층, 계약연도를 통제한 후
+보증금이 1% 증가하면 월세가 평균적으로 약 0.257% 낮아지는
+관계가 관찰되었다.
+
+
+## Feature Engineering 및 데이터 분할
+
+전세 모델:
+
+- Train: 266,848건
+- Test: 238,570건
+- Train 기간: 2023~2024
+- Test 기간: 2025
+- 학습 Target: log(전세보증금)
+
+월세 모델:
+
+- Train: 185,103건
+- Test: 183,778건
+- Train 기간: 2023~2024
+- Test 기간: 2025
+- 학습 Target: log(월세)
+
+Random Split을 사용하지 않고 계약일 기준으로 분할하여
+미래 데이터가 학습에 포함되는 데이터 누수를 방지하였다.
+
+
+## 모델링 주요 결과
+
+Median Baseline, Ridge Regression, Random Forest, XGBoost를
+동일한 2025년 Test 데이터에서 비교하였다.
+
+전세 최종 XGBoost:
+
+- MAE: 9,074.27만원
+- RMSE: 14,690.37만원
+- R²: 0.8403
+- Median Baseline 대비 MAE 개선율: 62.84%
+
+월세 최종 XGBoost:
+
+- MAE: 29.32만원
+- RMSE: 57.68만원
+- R²: 0.7885
+- Median Baseline 대비 MAE 개선율: 60.98%
+
+전세와 월세 모두 XGBoost가 가장 낮은 MAE와 RMSE,
+가장 높은 R²를 기록하여 최종 모델로 선정되었다.
+
+
+## SHAP 주요 결과
+
+전세 모델에서는 임대면적이 가장 중요한 변수로 나타났고,
+자치구, 건축연식, 법정동, 시간추세 순으로 높은 중요도를 보였다.
+
+월세 모델에서도 임대면적이 가장 중요했으며,
+보증금이 두 번째로 높은 중요도를 보였다.
+
+전세와 월세 모델 모두에서 임대면적이 증가할수록
+가격 예측을 높이는 방향으로 작용하였고,
+건축연식이 증가할수록 가격 예측을 낮추는 패턴이 나타났다.
+
+월세 모델에서는 보증금이 증가할수록
+월세가격 예측을 낮추는 전반적인 음의 관계가 확인되었다.
+
+EDA, 통계분석, 머신러닝, SHAP에서
+지역별 가격 차이, 건축연식과 가격의 음의 관계,
+보증금과 월세의 조건부 음의 관계가 일관되게 확인되었다.
+
+단, 통계분석과 SHAP 결과는 관찰 데이터 및 모델의 예측 기여도를
+설명하는 것이며 직접적인 인과관계를 의미하지 않는다.
+
+
 ## 현재 가설 상태
 
 H1.
 동일한 면적이라도 자치구에 따라 전세가격 차이가 존재한다.
 
-→ EDA에서 뚜렷한 패턴 확인
+→ Kruskal-Wallis 검정에서 통계적으로 유의한 차이 확인
+→ 효과 크기 Epsilon squared 0.3124
+→ H1 지지
 
 
 H2.
 건물 연식이 낮을수록 전세가격이 높다.
 
-→ EDA에서 일관된 패턴 확인
+→ Spearman rho -0.4143, p-value < 0.001
+→ H2 지지
 
 
 H3.
 전용면적이 증가할수록 전세가격이 증가한다.
 
-→ EDA에서 일부 확인
-→ 통계 분석에서 상관 및 회귀분석 예정
+→ Pearson r 0.6088, Spearman rho 0.6373
+→ p-value < 0.001
+→ H3 지지
 
 
 H4.
 지역과 면적을 통제해도 건물 연식은 가격에 영향을 준다.
 
-→ EDA에서 일부 확인
-→ 다중회귀 분석을 통해 추가 검증 예정
+→ 다른 조건을 통제한 다중회귀에서 유의한 음의 관계 확인
+→ 건축연식 1년 증가 시 전세보증금 약 1.18% 감소 관계
+→ H4 지지
 
 
 H5.
@@ -795,7 +1000,9 @@ H5.
 
 → 전체 데이터에서는 약한 양의 상관관계
 → 지역과 면적을 통제한 분석에서는 25개 자치구 모두 음의 상관관계
-→ 통계 분석에서 추가 검증 예정
+→ 다중회귀에서 보증금 1% 증가 시 월세 약 0.257% 감소 관계
+→ SHAP에서도 전반적인 음의 방향 확인
+→ H5 지지
 
 
 ## 완료된 Notebook
@@ -803,35 +1010,37 @@ H5.
 - `01_data_understanding.ipynb`
 - `02_data_cleaning.ipynb`
 - `03_eda.ipynb`
+- `04_statistical_analysis.ipynb`
+- `05_feature_engineering.ipynb`
+- `06_modeling.ipynb`
+- `07_model_explainability.ipynb`
 
 
 ## 다음 작업
 
 다음 단계:
 
-Phase 7 - Statistical Analysis
-
-새 Notebook:
-
-`notebooks/04_statistical_analysis.ipynb`
+Phase 11 - SQL Analysis
 
 진행 예정:
 
-1. 분석용 데이터 로드 및 통계 분석 환경 구성
-2. 전세가격과 전용면적의 Pearson / Spearman 상관분석
-3. 자치구별 전세가격 차이 통계 검정
-4. 건축연식별 전세가격 차이 검정
-5. 다중회귀분석을 통한 가격 결정요인 분석
-6. 지역, 면적, 연식 등을 동시에 통제한 상태에서 각 변수의 영향 확인
-7. 월세 데이터의 보증금-월세 관계 회귀분석
-8. 가설 H1~H5에 대한 통계 분석 결과 정리
+1. 정제 데이터를 PostgreSQL에 적재할 Schema 정의
+2. 자치구별·연도별 전월세 거래량 및 가격 집계
+3. CTE와 Window Function을 활용한 순위 및 증감률 분석
+4. Python 분석 결과와 SQL 집계 결과 검증
 
-통계 분석에서는 p-value만을 기준으로 결론을 내리지 않고,
-효과 크기, 표본 수, 변수 통제 여부와 함께 해석한다.
+이후 작업:
 
-인과관계로 확인되지 않은 결과는
-`영향을 준다`라고 표현하지 않고
-`관련이 있다`, `차이가 관찰되었다`와 같이 기술한다.
+1. README 및 최종 분석 보고서 작성
+2. Dashboard용 집계 JSON 생성
+3. React Dashboard 개발
+4. Vercel 배포
+5. Portfolio 연결
+
+최종 문서와 Dashboard에서도 인과관계로 확인되지 않은 결과는
+`영향을 준다`라고 단정하지 않고
+`관련이 있다`, `차이가 관찰되었다`,
+`예측을 높이거나 낮추는 방향으로 작용하였다`와 같이 기술한다.
 
 ---
 
