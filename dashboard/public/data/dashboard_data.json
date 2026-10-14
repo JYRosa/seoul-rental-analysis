@@ -1,0 +1,250 @@
+{
+  "summary": {
+    "clean_rows": 881794,
+    "analysis_rows": 875925,
+    "district_count": 25,
+    "jeonse_model": {
+      "mae": 9074.27,
+      "rmse": 14690.37,
+      "r2": 0.8403
+    },
+    "monthly_model": {
+      "mae": 29.32,
+      "rmse": 57.68,
+      "r2": 0.7885
+    }
+  },
+  "yearly_jeonse": [
+    {
+      "year": 2023,
+      "contract_count": 140777,
+      "median_deposit": 46000.0,
+      "median_deposit_per_m2": 644.24
+    },
+    {
+      "year": 2024,
+      "contract_count": 126116,
+      "median_deposit": 50000.0,
+      "median_deposit_per_m2": 706.66
+    },
+    {
+      "year": 2025,
+      "contract_count": 238592,
+      "median_deposit": 52500.0,
+      "median_deposit_per_m2": 727.67
+    }
+  ],
+  "district_price_2025": [
+    {
+      "district": "서초구",
+      "contract_count": 16248,
+      "median_deposit_per_m2": 1044.93
+    },
+    {
+      "district": "강남구",
+      "contract_count": 19327,
+      "median_deposit_per_m2": 1000.59
+    },
+    {
+      "district": "성동구",
+      "contract_count": 11044,
+      "median_deposit_per_m2": 883.74
+    },
+    {
+      "district": "중구",
+      "contract_count": 3141,
+      "median_deposit_per_m2": 882.57
+    },
+    {
+      "district": "용산구",
+      "contract_count": 5496,
+      "median_deposit_per_m2": 871.02
+    },
+    {
+      "district": "마포구",
+      "contract_count": 11068,
+      "median_deposit_per_m2": 865.21
+    },
+    {
+      "district": "송파구",
+      "contract_count": 20458,
+      "median_deposit_per_m2": 833.61
+    },
+    {
+      "district": "광진구",
+      "contract_count": 4924,
+      "median_deposit_per_m2": 832.45
+    },
+    {
+      "district": "종로구",
+      "contract_count": 1616,
+      "median_deposit_per_m2": 826.09
+    },
+    {
+      "district": "동작구",
+      "contract_count": 10083,
+      "median_deposit_per_m2": 800.52
+    },
+    {
+      "district": "영등포구",
+      "contract_count": 10649,
+      "median_deposit_per_m2": 750.63
+    },
+    {
+      "district": "서대문구",
+      "contract_count": 7092,
+      "median_deposit_per_m2": 735.49
+    },
+    {
+      "district": "동대문구",
+      "contract_count": 8874,
+      "median_deposit_per_m2": 717.28
+    },
+    {
+      "district": "양천구",
+      "contract_count": 12400,
+      "median_deposit_per_m2": 717.09
+    },
+    {
+      "district": "강동구",
+      "contract_count": 16467,
+      "median_deposit_per_m2": 706.38
+    },
+    {
+      "district": "성북구",
+      "contract_count": 9100,
+      "median_deposit_per_m2": 651.08
+    },
+    {
+      "district": "강서구",
+      "contract_count": 13620,
+      "median_deposit_per_m2": 650.65
+    },
+    {
+      "district": "관악구",
+      "contract_count": 5683,
+      "median_deposit_per_m2": 648.57
+    },
+    {
+      "district": "은평구",
+      "contract_count": 8730,
+      "median_deposit_per_m2": 639.14
+    },
+    {
+      "district": "중랑구",
+      "contract_count": 5164,
+      "median_deposit_per_m2": 577.31
+    },
+    {
+      "district": "구로구",
+      "contract_count": 7951,
+      "median_deposit_per_m2": 531.92
+    },
+    {
+      "district": "강북구",
+      "contract_count": 2634,
+      "median_deposit_per_m2": 526.05
+    },
+    {
+      "district": "금천구",
+      "contract_count": 2649,
+      "median_deposit_per_m2": 517.44
+    },
+    {
+      "district": "노원구",
+      "contract_count": 17950,
+      "median_deposit_per_m2": 485.13
+    },
+    {
+      "district": "도봉구",
+      "contract_count": 6224,
+      "median_deposit_per_m2": 456.31
+    }
+  ],
+  "building_age_price_2025": [
+    {
+      "age_group": "0~4년",
+      "contract_count": 23390,
+      "median_deposit": 65100.0,
+      "median_deposit_per_m2": 988.47
+    },
+    {
+      "age_group": "5~9년",
+      "contract_count": 32296,
+      "median_deposit": 67500.0,
+      "median_deposit_per_m2": 971.53
+    },
+    {
+      "age_group": "10~19년",
+      "contract_count": 49189,
+      "median_deposit": 60000.0,
+      "median_deposit_per_m2": 776.79
+    },
+    {
+      "age_group": "20~29년",
+      "contract_count": 67360,
+      "median_deposit": 50000.0,
+      "median_deposit_per_m2": 673.74
+    },
+    {
+      "age_group": "30년 이상",
+      "contract_count": 66335,
+      "median_deposit": 40000.0,
+      "median_deposit_per_m2": 592.71
+    }
+  ],
+  "model_performance": {
+    "jeonse": [
+      {
+        "model": "Median Baseline",
+        "mae": 24418.73,
+        "rmse": 38372.88,
+        "r2": -0.0898
+      },
+      {
+        "model": "Ridge Regression",
+        "mae": 11750.89,
+        "rmse": 21799.32,
+        "r2": 0.6483
+      },
+      {
+        "model": "Random Forest",
+        "mae": 10085.6,
+        "rmse": 16266.84,
+        "r2": 0.8042
+      },
+      {
+        "model": "XGBoost",
+        "mae": 9074.27,
+        "rmse": 14690.37,
+        "r2": 0.8403
+      }
+    ],
+    "monthly": [
+      {
+        "model": "Median Baseline",
+        "mae": 75.15,
+        "rmse": 131.83,
+        "r2": -0.1049
+      },
+      {
+        "model": "Ridge Regression",
+        "mae": 57.81,
+        "rmse": 169.7,
+        "r2": -0.8308
+      },
+      {
+        "model": "Random Forest",
+        "mae": 29.88,
+        "rmse": 59.86,
+        "r2": 0.7722
+      },
+      {
+        "model": "XGBoost",
+        "mae": 29.32,
+        "rmse": 57.68,
+        "r2": 0.7885
+      }
+    ]
+  }
+}
