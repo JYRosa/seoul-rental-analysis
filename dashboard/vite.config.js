@@ -8,7 +8,12 @@ function vendorChunk(id) {
   return 'vendor'
 }
 
+// GitHub Pages 프로젝트 사이트(https://<user>.github.io/seoul-rental-analysis/) 하위 경로.
+// 코드에서는 경로를 직접 쓰지 않고 import.meta.env.BASE_URL 을 통해 참조한다.
+const BASE_PATH = '/seoul-rental-analysis/'
+
 export default defineConfig({
+  base: BASE_PATH,
   plugins: [react()],
   build: {
     rollupOptions: {
